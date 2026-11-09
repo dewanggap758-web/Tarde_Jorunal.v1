@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=19">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=20">
     
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales-all.global.min.js"></script>
@@ -423,8 +423,10 @@
                     <span class="metric-title">Buy / Sell Ratio</span>
                     <div class="metric-icon icon-rose">B/S</div>
                 </div>
-                <div class="metric-value" style="font-size: 1.15rem; color: #1e293b; font-weight: 600;">
-                    Buy {{ buy_percentage }}% &bull; Sell {{ sell_percentage }}%
+                <div class="metric-value buy-sell-breakdown">
+                    <span class="buy-sell-buy">Buy {{ buy_percentage }}%</span>
+                    <span class="buy-sell-divider" aria-hidden="true">&bull;</span>
+                    <span class="buy-sell-sell">Sell {{ sell_percentage }}%</span>
                 </div>
                 <div class="metric-desc">Market Bias Distribution</div>
             </div>
@@ -490,11 +492,11 @@
                     </div>
                     <div class="mix-chart-legend">
                         <div>
-                            <span><i class="mix-dot mix-buy"></i>Buy</span>
+                            <span class="mix-label-buy"><i class="mix-dot mix-buy"></i>Buy</span>
                             <strong>{{ buy_count }} <small>{{ buy_percentage }}%</small></strong>
                         </div>
                         <div>
-                            <span><i class="mix-dot mix-sell"></i>Sell</span>
+                            <span class="mix-label-sell"><i class="mix-dot mix-sell"></i>Sell</span>
                             <strong>{{ sell_count }} <small>{{ sell_percentage }}%</small></strong>
                         </div>
                     </div>

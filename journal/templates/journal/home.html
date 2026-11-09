@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Trade Journal membantu Anda mencatat trade, meninjau performa, dan membangun kebiasaan trading yang lebih terukur.">
+    <title>Trade Journal — Jurnal Trading Anda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=21">
+</head>
+<body class="landing-page">
+    <header class="landing-nav">
+        <a class="landing-brand" href="{% url 'home' %}" aria-label="Trade Journal, beranda">
+            <span class="landing-brand-mark" aria-hidden="true">TJ</span>
+            <span>Trade<span>Journal</span></span>
+        </a>
+        <nav class="landing-nav-links" aria-label="Navigasi utama">
+            <a href="#fitur">Fitur</a>
+            <a href="{% url 'login' %}">Masuk</a>
+            <a class="landing-nav-cta" href="{% url 'register' %}">Buat akun</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="landing-hero">
+            <div class="landing-hero-glow landing-hero-glow-one" aria-hidden="true"></div>
+            <div class="landing-hero-glow landing-hero-glow-two" aria-hidden="true"></div>
+            <div class="landing-hero-content">
+                <p class="landing-eyebrow"><span></span> JURNAL TRADING PRIBADI</p>
+                <h1>Kendalikan<br><em>Trading Anda.</em></h1>
+                <p class="landing-intro">
+                    Catat setiap keputusan, evaluasi hasilnya, dan pahami perkembangan trading
+                    Anda dalam satu ruang yang rapi.
+                </p>
+                <div class="landing-actions">
+                    <a class="landing-primary-action" href="{% url 'register' %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                        Mulai mencatat
+                    </a>
+                    <a class="landing-secondary-action" href="{% url 'login' %}">Saya sudah punya akun</a>
+                </div>
+                <div class="landing-trust-note">
+                    <span class="landing-trust-dot" aria-hidden="true"></span>
+                    Jurnal pribadi Anda, dengan riwayat yang hanya terlihat setelah masuk.
+                </div>
+            </div>
+
+            <div class="landing-preview" aria-label="Ilustrasi tampilan dashboard Trade Journal">
+                <div class="landing-preview-topbar">
+                    <div class="landing-preview-brand"><span></span> WORKSPACE</div>
+                    <div class="landing-preview-avatar" aria-hidden="true">TJ</div>
+                </div>
+                <div class="landing-preview-body">
+                    <div class="landing-preview-sidebar" aria-hidden="true">
+                        <i class="is-active"></i><i></i><i></i><i></i>
+                    </div>
+                    <div class="landing-preview-main">
+                        <div class="landing-preview-heading">
+                            <span></span><i></i>
+                        </div>
+                        <div class="landing-preview-metrics" aria-hidden="true">
+                            <div><span></span><b></b><i></i></div>
+                            <div><span></span><b></b><i></i></div>
+                            <div><span></span><b></b><i></i></div>
+                        </div>
+                        <div class="landing-preview-chart">
+                            <div class="landing-preview-chart-head"><span></span><i></i></div>
+                            <svg viewBox="0 0 520 170" preserveAspectRatio="none" aria-hidden="true">
+                                <defs>
+                                    <linearGradient id="landing-chart-fill" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stop-color="#f97316" stop-opacity=".28"/>
+                                        <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <path class="landing-chart-area" d="M0 140 C35 128 45 132 75 119 S120 136 148 105 S196 110 223 87 S265 100 295 70 S337 82 366 60 S410 74 438 40 S480 55 520 22 V170 H0 Z"/>
+                                <path class="landing-chart-line" d="M0 140 C35 128 45 132 75 119 S120 136 148 105 S196 110 223 87 S265 100 295 70 S337 82 366 60 S410 74 438 40 S480 55 520 22"/>
+                            </svg>
+                            <div class="landing-preview-chart-axis" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+                        </div>
+                        <div class="landing-preview-table" aria-hidden="true">
+                            <span></span><span></span><span></span><span></span>
+                            <i></i><i></i><i></i><i></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="landing-preview-caption">ILUSTRASI DASHBOARD</div>
+            </div>
+        </section>
+
+        <section class="landing-features" id="fitur">
+            <div class="landing-section-heading">
+                <p class="landing-eyebrow"><span></span> SATU TEMPAT UNTUK BERTUMBUH</p>
+                <h2>Lebih dari sekadar catatan trade.</h2>
+                <p>Gunakan jurnal untuk melihat kembali proses dan hasil Anda dengan lebih jelas.</p>
+            </div>
+            <div class="landing-feature-grid">
+                <article class="landing-feature-card">
+                    <span class="landing-feature-icon landing-feature-icon-orange" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
+                    </span>
+                    <h3>Catatan terstruktur</h3>
+                    <p>Simpan pair, arah posisi, harga, strategi, emosi, dan catatan dalam satu jurnal.</p>
+                </article>
+                <article class="landing-feature-card">
+                    <span class="landing-feature-icon landing-feature-icon-green" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg>
+                    </span>
+                    <h3>Ringkasan performa</h3>
+                    <p>Tinjau PnL, win rate, aktivitas, dan komposisi posisi melalui dashboard.</p>
+                </article>
+                <article class="landing-feature-card">
+                    <span class="landing-feature-icon landing-feature-icon-purple" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8 14h.01M12 14h.01M16 14h.01"/></svg>
+                    </span>
+                    <h3>Riwayat yang mudah ditinjau</h3>
+                    <p>Lihat catatan berdasarkan waktu dan unduh recap trading sebagai PDF.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <a class="landing-brand" href="{% url 'home' %}">
+            <span class="landing-brand-mark" aria-hidden="true">TJ</span>
+            <span>Trade<span>Journal</span></span>
+        </a>
+        <p>Jurnal yang rapi membantu evaluasi. Keputusan trading tetap milik Anda.</p>
+    </footer>
+</body>
+</html>

@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=18">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=19">
 </head>
 <body>
 
@@ -44,7 +44,7 @@
             </article>
             <article class="trade-metric-card">
                 <span class="trade-metric-label">Buy / sell</span>
-                <strong class="trade-metric-split"><span class="text-profit">Buy {{ buy_percentage }}%</span><span> / </span><span class="text-loss">Sell {{ sell_percentage }}%</span></strong>
+                <strong class="trade-metric-split"><span class="trade-side-buy">Buy {{ buy_percentage }}%</span><span class="trade-side-divider"> / </span><span class="trade-side-sell">Sell {{ sell_percentage }}%</span></strong>
                 <span class="trade-metric-note">Distribusi posisi</span>
             </article>
         </section>

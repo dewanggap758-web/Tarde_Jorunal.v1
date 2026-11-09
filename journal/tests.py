@@ -4,6 +4,28 @@ from django.urls import reverse
 from .models import TradeLog
 
 
+class HomePageTests(TestCase):
+    def test_home_page_introduces_the_app_and_links_to_authentication(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Kendalikan')
+        self.assertContains(response, reverse('login'))
+        self.assertContains(response, reverse('register'))
+
+    def test_dashboard_stays_private_and_logout_returns_to_home(self):
+        response = self.client.get(reverse('dashboard'))
+        self.assertRedirects(
+            response,
+            '{}?next={}'.format(reverse('login'), reverse('dashboard')),
+        )
+
+        user = User.objects.create_user(username='home-test', password='safe-test-password')
+        self.client.force_login(user)
+        response = self.client.get(reverse('logout'))
+        self.assertRedirects(response, reverse('home'))
+
+
 class RegistrationTests(TestCase):
     def test_registration_saves_a_hashed_password_and_logs_user_in(self):
         response = self.client.post(
@@ -25,6 +47,17 @@ class RegistrationTests(TestCase):
 class TradeRecapTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='trader', password='safe-test-password')
+
+    def test_dashboard_and_trade_page_use_distinct_buy_sell_colors(self):
+        self.client.force_login(self.user)
+
+        dashboard_response = self.client.get(reverse('dashboard'))
+        self.assertContains(dashboard_response, 'class="buy-sell-buy"')
+        self.assertContains(dashboard_response, 'class="mix-label-sell"')
+
+        trade_response = self.client.get(reverse('add_trade'))
+        self.assertContains(trade_response, 'class="trade-side-buy"')
+        self.assertContains(trade_response, 'class="trade-side-sell"')
 
     def test_dashboard_offers_recap_pdf_download(self):
         self.client.force_login(self.user)

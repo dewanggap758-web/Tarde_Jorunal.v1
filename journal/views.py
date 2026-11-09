@@ -20,6 +20,10 @@ from django.utils import timezone
 from .exports import build_trade_recap_pdf
 from django.http import HttpResponse
 
+def home_view(request):
+    return render(request, 'journal/home.html')
+
+
 @login_required(login_url='login')
 def dashboard_view(request):
     # Ambil trade milik user yang login ATAU yang user-nya kosong (untuk jaga-jaga)
@@ -279,4 +283,4 @@ def download_trade_recap(request):
 # Fitur Logout
 def logout_view(request):
     logout(request)
-    return redirect('dashboard') # Setelah logout kembali ke dashboard publik
+    return redirect('home')
