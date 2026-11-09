@@ -10,6 +10,7 @@ class HomePageTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Kendalikan')
+        self.assertContains(response, 'Dewangga Putra')
         self.assertContains(response, reverse('login'))
         self.assertContains(response, reverse('register'))
 

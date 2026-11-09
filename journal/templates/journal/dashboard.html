@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=20">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=23">
     
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales-all.global.min.js"></script>
@@ -573,7 +573,8 @@
         </div>
 
     </div>
-        </div>
+    {% include "journal/_copyright.html" %}
+    </div>
     </div>
 
 </body>

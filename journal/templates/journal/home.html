@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=21">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=23">
 </head>
 <body class="landing-page">
     <header class="landing-nav">
@@ -128,6 +128,7 @@
             <span>Trade<span>Journal</span></span>
         </a>
         <p>Jurnal yang rapi membantu evaluasi. Keputusan trading tetap milik Anda.</p>
+        {% include "journal/_copyright.html" %}
     </footer>
 </body>
 </html>
