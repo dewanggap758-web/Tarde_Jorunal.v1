@@ -112,19 +112,35 @@ WSGI_APPLICATION = 'backend_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'postgres'),
-        'USER': os.environ.get('DB_USER', 'postgres.gnlwglfmoeararpqznre'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'aws-0-ap-northeast-1.pooler.supabase.com'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
-        'OPTIONS': {
-            'sslmode': os.environ.get('DB_SSLMODE', 'require'),
+DATABASE_BACKEND = os.environ.get('DJANGO_DATABASE', 'postgres').strip().lower()
+if DATABASE_BACKEND == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.environ.get(
+                'SQLITE_DATABASE_PATH',
+                str(BASE_DIR / 'db.sqlite3'),
+            ),
         },
     }
-}
+elif DATABASE_BACKEND == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'postgres'),
+            'USER': os.environ.get('DB_USER', 'postgres.gnlwglfmoeararpqznre'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'aws-0-ap-northeast-1.pooler.supabase.com'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': os.environ.get('DB_SSLMODE', 'require'),
+            },
+        },
+    }
+else:
+    raise ImproperlyConfigured(
+        'DJANGO_DATABASE must be either "postgres" or "sqlite".'
+    )
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
 
