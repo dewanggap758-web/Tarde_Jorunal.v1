@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Trade Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=13">
+</head>
+<body class="auth-page">
+
+    <!-- Navbar -->
+    <nav class="app-nav">
+        <div class="app-title-wrapper">
+            <div class="app-logo-box" aria-hidden="true">TJ</div>
+            <div>
+                <h1 class="app-title">Trade Journal</h1>
+                <p class="app-subtitle-tag">Catat, evaluasi, berkembang</p>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'login' %}" class="btn-outline">Masuk</a>
+        </div>
+    </nav>
+
+    <main class="auth-wrapper">
+        <section class="auth-card auth-card-register">
+            <div class="auth-header">
+                <div class="auth-logo" aria-hidden="true">TJ</div>
+                <p class="auth-eyebrow">MULAI PERJALANAN ANDA</p>
+                <h2 class="auth-title">Buat akun baru</h2>
+                <p class="auth-subtitle">Simpan jurnal dan pantau perkembangan trading Anda.</p>
+            </div>
+
+            <form method="POST" class="auth-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="auth-btn">Buat akun <span aria-hidden="true">→</span></button>
+            </form>
+
+            <div class="auth-footer-text">
+                Sudah punya akun? <a href="{% url 'login' %}">Masuk ke akun</a>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

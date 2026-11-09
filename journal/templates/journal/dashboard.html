@@ -1,0 +1,578 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Journal - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=19">
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales-all.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          locale: 'id',
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next',
+            center: 'title',
+            right: 'today dayGridMonth,timeGridWeek,listMonth'
+          },
+          buttonText: {
+            today: 'Hari ini',
+            month: 'Bulan',
+            week: 'Minggu',
+            list: 'Agenda'
+          },
+          firstDay: 1,
+          fixedWeekCount: false,
+          dayMaxEvents: 2,
+          height: 'auto',
+          events: JSON.parse(document.getElementById('calendar-events').textContent),
+          eventDisplay: 'block',
+          eventDidMount: function(info) {
+            var tradeCount = info.event.extendedProps.tradeCount;
+            info.el.title = info.event.title + ' · ' + tradeCount + ' trade';
+          }
+        });
+        calendar.render();
+
+        var pnlChartData = JSON.parse(document.getElementById('pnl-chart-data').textContent);
+        var pnlCanvas = document.getElementById('pnl-chart');
+        if (pnlCanvas && pnlChartData.length && window.Chart) {
+          var ctx = pnlCanvas.getContext('2d');
+          var fill = ctx.createLinearGradient(0, 0, 0, 300);
+          fill.addColorStop(0, 'rgba(249, 115, 22, 0.2)');
+          fill.addColorStop(1, 'rgba(249, 115, 22, 0.005)');
+          var pointsByDate = Object.create(null);
+          pnlChartData.forEach(function(item) {
+            pointsByDate[item.date] = item;
+          });
+          var chartPoints = [];
+          var firstDate = new Date(pnlChartData[0].date + 'T00:00:00Z');
+          var lastDate = new Date(pnlChartData[pnlChartData.length - 1].date + 'T00:00:00Z');
+          for (var day = new Date(firstDate); day <= lastDate; day.setUTCDate(day.getUTCDate() + 1)) {
+            var dateKey = day.toISOString().slice(0, 10);
+            chartPoints.push(pointsByDate[dateKey] || {
+              date: dateKey,
+              pnl: 0,
+              tradeCount: 0
+            });
+          }
+
+          function makeSmoothPoints(points, valueKey) {
+            var result = [];
+            var dateFormatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' });
+            points.forEach(function(point, index) {
+              result.push({
+                label: dateFormatter.format(new Date(point.date + 'T00:00:00')),
+                value: point[valueKey],
+                actual: true,
+                tradeCount: point.tradeCount
+              });
+
+              var nextPoint = points[index + 1];
+              if (!nextPoint) return;
+              for (var step = 1; step < 6; step += 1) {
+                var progress = step / 6;
+                var easedProgress = progress * progress * (3 - 2 * progress);
+                result.push({
+                  label: '',
+                  value: point[valueKey] + (nextPoint[valueKey] - point[valueKey]) * easedProgress,
+                  actual: false,
+                  tradeCount: 0
+                });
+              }
+            });
+            return result;
+          }
+
+          var smoothPnlPoints = makeSmoothPoints(chartPoints, 'pnl');
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: smoothPnlPoints.map(function(point) { return point.label; }),
+              datasets: [{
+                label: 'PnL harian',
+                data: smoothPnlPoints.map(function(point) { return point.value; }),
+                borderColor: '#fb923c',
+                backgroundColor: fill,
+                borderWidth: 2,
+                tension: 0.35,
+                fill: true,
+                pointRadius: function(context) {
+                  var point = smoothPnlPoints[context.dataIndex];
+                  return point.actual && point.tradeCount ? 3 : 0;
+                },
+                pointHoverRadius: 6,
+                pointHitRadius: 10,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#fb923c',
+                pointBorderWidth: 1.8,
+                pointHoverBackgroundColor: '#ffffff',
+                pointHoverBorderColor: '#fdba74',
+                pointHoverBorderWidth: 2.5
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { intersect: false, mode: 'index' },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  displayColors: false,
+                  filter: function(context) {
+                    return smoothPnlPoints[context.dataIndex].actual;
+                  },
+                  backgroundColor: 'rgba(23, 32, 51, 0.94)',
+                  titleColor: '#ffffff',
+                  bodyColor: '#e2e8f0',
+                  padding: 12,
+                  cornerRadius: 10,
+                  callbacks: {
+                    label: function(context) {
+                      var value = Number(context.raw);
+                      return ' PnL: ' + (value >= 0 ? '+' : '-') + '$' + Math.abs(value).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      });
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  border: { display: false },
+                  ticks: {
+                    color: '#a1a1aa',
+                    maxRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: 7,
+                    padding: 10,
+                    callback: function(value, index) { return smoothPnlPoints[index].label; }
+                  }
+                },
+                y: {
+                  border: { display: false, dash: [4, 4] },
+                  grid: {
+                    color: function(context) {
+                      return context.tick.value === 0 ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.07)';
+                    },
+                    drawTicks: false
+                  },
+                  ticks: {
+                    color: '#a1a1aa',
+                    padding: 10,
+                    callback: function(value) { return '$' + Number(value).toLocaleString('en-US'); }
+                  }
+                }
+              },
+              layout: { padding: { top: 18, right: 12, bottom: 4 } }
+            },
+            plugins: [{
+              id: 'softLineGlow',
+              beforeDatasetDraw: function(chart, args) {
+                if (args.meta.type === 'line') {
+                  chart.ctx.save();
+                  chart.ctx.shadowColor = 'rgba(249, 115, 22, 0.65)';
+                  chart.ctx.shadowBlur = 16;
+                  chart.ctx.shadowOffsetY = 1;
+                }
+              },
+              afterDatasetDraw: function(chart, args) {
+                if (args.meta.type === 'line') {
+                  chart.ctx.restore();
+                }
+              }
+            }]
+          });
+
+          var activityCanvas = document.getElementById('trade-activity-chart');
+          if (activityCanvas) {
+            var activityContext = activityCanvas.getContext('2d');
+            var activityGradient = activityContext.createLinearGradient(0, 0, 0, 240);
+            activityGradient.addColorStop(0, 'rgba(249, 115, 22, 0.8)');
+            activityGradient.addColorStop(1, 'rgba(249, 115, 22, 0.12)');
+            var smoothActivityPoints = makeSmoothPoints(chartPoints, 'tradeCount');
+            new Chart(activityContext, {
+              type: 'line',
+              data: {
+                labels: smoothActivityPoints.map(function(point) { return point.label; }),
+                datasets: [{
+                  label: 'Trade ditutup',
+                  data: smoothActivityPoints.map(function(point) { return point.value; }),
+                  backgroundColor: activityGradient,
+                  borderColor: '#fb923c',
+                  borderWidth: 2.5,
+                  tension: 0.35,
+                  fill: true,
+                  pointRadius: function(context) {
+                    var point = smoothActivityPoints[context.dataIndex];
+                    return point.actual && point.tradeCount ? 2 : 0;
+                  },
+                  pointHoverRadius: 5,
+                  pointHitRadius: 10,
+                  pointBackgroundColor: '#fff7ed',
+                  pointBorderColor: '#fb923c',
+                  pointBorderWidth: 2
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    filter: function(context) {
+                      return smoothActivityPoints[context.dataIndex].actual;
+                    },
+                    backgroundColor: 'rgba(23, 23, 26, 0.96)',
+                    titleColor: '#fafafa',
+                    bodyColor: '#fdba74',
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                      label: function(context) {
+                        return ' ' + context.raw + ' trade ditutup';
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: {
+                      color: '#a1a1aa',
+                      maxRotation: 0,
+                      autoSkip: true,
+                      maxTicksLimit: 7,
+                      callback: function(value, index) { return smoothActivityPoints[index].label; }
+                    }
+                  },
+                  y: {
+                    beginAtZero: true,
+                    border: { display: false },
+                    grid: { color: 'rgba(255, 255, 255, 0.07)' },
+                    ticks: { color: '#a1a1aa', precision: 0, stepSize: 1 }
+                  }
+                }
+              },
+              plugins: [{
+                id: 'activityGlow',
+                beforeDatasetDraw: function(chart, args) {
+                  if (args.meta.type !== 'line') return;
+                  chart.ctx.save();
+                  chart.ctx.shadowColor = 'rgba(249, 115, 22, 0.38)';
+                  chart.ctx.shadowBlur = 12;
+                  chart.ctx.shadowOffsetY = 2;
+                },
+                afterDatasetDraw: function(chart, args) {
+                  if (args.meta.type !== 'line') return;
+                  chart.ctx.restore();
+                }
+              }]
+            });
+          }
+        }
+
+        var mixCanvas = document.getElementById('trade-mix-chart');
+        if (mixCanvas && window.Chart) {
+          var tradeMix = JSON.parse(document.getElementById('trade-mix-data').textContent);
+          var mixTotal = tradeMix[0] + tradeMix[1];
+          if (mixTotal > 0) {
+            var mixContext = mixCanvas.getContext('2d');
+            new Chart(mixContext, {
+              type: 'doughnut',
+              data: {
+                labels: ['Buy', 'Sell'],
+                datasets: [{
+                  data: tradeMix,
+                  backgroundColor: ['#f97316', '#10b981'],
+                  hoverBackgroundColor: ['#fb923c', '#34d399'],
+                  borderColor: '#111113',
+                  borderWidth: 5,
+                  hoverOffset: 8,
+                  borderRadius: 5
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '74%',
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    backgroundColor: 'rgba(23, 23, 26, 0.96)',
+                    titleColor: '#fafafa',
+                    bodyColor: '#e4e4e7',
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                      label: function(context) {
+                        var percent = mixTotal ? (context.raw / mixTotal * 100).toFixed(1) : 0;
+                        return ' ' + context.label + ': ' + context.raw + ' (' + percent + '%)';
+                      }
+                    }
+                  }
+                }
+              },
+              plugins: [{
+                id: 'mixCenterLabel',
+                afterDraw: function(chart) {
+                  var center = chart.getDatasetMeta(0).data[0];
+                  if (!center) return;
+                  var context = chart.ctx;
+                  context.save();
+                  context.textAlign = 'center';
+                  context.textBaseline = 'middle';
+                  context.fillStyle = '#f4f4f5';
+                  context.font = '700 22px ui-sans-serif, system-ui, sans-serif';
+                  context.shadowColor = 'rgba(249, 115, 22, 0.5)';
+                  context.shadowBlur = 10;
+                  context.fillText(mixTotal, center.x, center.y - 5);
+                  context.shadowBlur = 0;
+                  context.fillStyle = '#a1a1aa';
+                  context.font = '500 11px ui-sans-serif, system-ui, sans-serif';
+                  context.fillText('TOTAL TRADE', center.x, center.y + 15);
+                  context.restore();
+                }
+              }]
+            });
+          }
+        }
+      });
+    </script>
+</head>
+<body>
+
+    <div class="app-shell">
+        {% include "journal/_sidebar.html" with active_page="dashboard" %}
+        <div class="app-main">
+        <header class="workspace-heading">
+            <div>
+                <span>TRADING JOURNAL</span>
+                <h2>Overview</h2>
+            </div>
+            <div class="workspace-actions">
+                <a href="{% url 'download_trade_recap' %}" class="workspace-action">Unduh recap PDF</a>
+                <a href="{% url 'add_trade' %}" class="workspace-action">+ Catat trade</a>
+            </div>
+        </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Banner Selamat Datang -->
+        <div class="overview-banner">
+            <div>
+                <h2 class="overview-title">Welcome back, {{ request.user.username|title }}</h2>
+                <p class="overview-subtitle">
+                    Portfolio is up <span class="text-profit">+${{ total_pnl|floatformat:2 }}</span> this month. You have maintained a <strong>{{ win_rate }}% win rate</strong> across <strong>{{ total_trades }} positions</strong>.
+                </p>
+            </div>
+            <div class="account-balance-box">
+                <div class="account-label">Total Realized PnL</div>
+                <div class="account-amount {% if total_pnl >= 0 %}text-profit{% else %}text-loss{% endif %}">
+                    ${{ total_pnl|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Statistik -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Net Profit / Loss</span>
+                    <div class="metric-icon icon-green">$</div>
+                </div>
+                <div class="metric-value {% if total_pnl >= 0 %}text-profit{% else %}text-loss{% endif %}">
+                    ${{ total_pnl|floatformat:2 }}
+                </div>
+                <div class="metric-desc">Total Realized PnL</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Win Rate</span>
+                    <div class="metric-icon icon-blue">%</div>
+                </div>
+                <div class="metric-value">{{ win_rate }}%</div>
+                <div class="metric-desc">{{ total_trades }} Total Trades</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Avg. Risk / Reward</span>
+                    <div class="metric-icon icon-purple">RR</div>
+                </div>
+                <div class="metric-value" style="color: #d97706; font-size: 1.35rem;">{{ avg_rr }}</div>
+                <div class="metric-desc">Target Ratio</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Buy / Sell Ratio</span>
+                    <div class="metric-icon icon-rose">B/S</div>
+                </div>
+                <div class="metric-value" style="font-size: 1.15rem; color: #1e293b; font-weight: 600;">
+                    Buy {{ buy_percentage }}% &bull; Sell {{ sell_percentage }}%
+                </div>
+                <div class="metric-desc">Market Bias Distribution</div>
+            </div>
+        </div>
+
+        <section class="card-box pnl-chart-card">
+            <div class="card-header">
+                <div class="pnl-chart-title">
+                    <span>Grafik PnL Harian</span>
+                    <p class="calendar-description">Pergerakan PnL harian dengan garis halus bercahaya.</p>
+                </div>
+                <div class="calendar-legend" aria-label="Keterangan grafik">
+                    <span><i class="chart-key chart-key-pnl"></i>PnL harian</span>
+                </div>
+            </div>
+            <div class="pnl-chart-container">
+                {% if pnl_chart_data %}
+                    <canvas id="pnl-chart" role="img" aria-label="Grafik garis PnL harian"></canvas>
+                {% else %}
+                    <div class="pnl-chart-empty">
+                        <span class="pnl-empty-mark" aria-hidden="true">↗</span>
+                        <strong>Belum ada data performa</strong>
+                        <span>Grafik akan terbentuk setelah trade pertama ditutup.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+        {{ pnl_chart_data|json_script:"pnl-chart-data" }}
+
+        <section class="dashboard-chart-grid" aria-label="Analisis trade">
+            <article class="card-box dashboard-chart-card">
+                <div class="card-header">
+                    <div>
+                        <span>Aktivitas Trade</span>
+                        <p class="calendar-description">Jumlah posisi ditutup per hari.</p>
+                    </div>
+                    <span class="chart-badge"><i></i> Harian</span>
+                </div>
+                <div class="mini-chart-container">
+                    {% if pnl_chart_data %}
+                        <canvas id="trade-activity-chart" role="img" aria-label="Grafik jumlah trade ditutup per hari"></canvas>
+                    {% else %}
+                        <div class="mini-chart-empty">Belum ada aktivitas trade untuk ditampilkan.</div>
+                    {% endif %}
+                </div>
+            </article>
+
+            <article class="card-box dashboard-chart-card">
+                <div class="card-header">
+                    <div>
+                        <span>Komposisi Posisi</span>
+                        <p class="calendar-description">Perbandingan arah Buy dan Sell.</p>
+                    </div>
+                    <span class="chart-badge"><i></i> Total</span>
+                </div>
+                <div class="mix-chart-layout">
+                    <div class="mix-chart-container">
+                        {% if total_trades %}
+                            <canvas id="trade-mix-chart" role="img" aria-label="Grafik komposisi Buy dan Sell"></canvas>
+                        {% else %}
+                            <div class="mini-chart-empty">Belum ada trade.</div>
+                        {% endif %}
+                    </div>
+                    <div class="mix-chart-legend">
+                        <div>
+                            <span><i class="mix-dot mix-buy"></i>Buy</span>
+                            <strong>{{ buy_count }} <small>{{ buy_percentage }}%</small></strong>
+                        </div>
+                        <div>
+                            <span><i class="mix-dot mix-sell"></i>Sell</span>
+                            <strong>{{ sell_count }} <small>{{ sell_percentage }}%</small></strong>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+        {{ trade_mix_data|json_script:"trade-mix-data" }}
+
+        <!-- Kalender -->
+        <div class="card-box" id="trading-calendar">
+            <div class="card-header">
+                <div>
+                    <span>Kalender Trading</span>
+                    <p class="calendar-description">Pantau hasil trading harian dan buka tampilan agenda mingguan.</p>
+                </div>
+                <div class="calendar-legend" aria-label="Keterangan hasil">
+                    <span><i class="legend-dot legend-profit"></i>Profit</span>
+                    <span><i class="legend-dot legend-loss"></i>Loss</span>
+                </div>
+            </div>
+            <div class="calendar-container">
+                <div id="calendar"></div>
+            </div>
+        </div>
+        {{ calendar_events|json_script:"calendar-events" }}
+
+        <!-- Tabel Riwayat Trade -->
+        <div class="card-box">
+            <div class="card-header">
+                <span>Recent Trading Journal Logs</span>
+            </div>
+            <div class="table-responsive">
+                <table class="trading-table">
+                    <thead>
+                        <tr>
+                            <th>Date / Time</th>
+                            <th>Pair</th>
+                            <th>Type</th>
+                            <th>Lot</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>PnL</th>
+                            <th>Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in trades %}
+                        <tr>
+                            <td class="text-muted">{{ t.date_time|date:"Y-m-d H:i" }}</td>
+                            <td class="text-pair">{{ t.pair }}</td>
+                            <td>
+                                {% if t.order_type == 'BUY' %}
+                                    <span class="badge-buy">BUY</span>
+                                {% else %}
+                                    <span class="badge-sell">SELL</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.lot_size }}</td>
+                            <td>{{ t.entry_price }}</td>
+                            <td>{{ t.exit_price|default:"-" }}</td>
+                            <td class="{% if t.pnl and t.pnl >= 0 %}text-profit{% else %}text-loss{% endif %}">
+                                {% if t.pnl %}${{ t.pnl|floatformat:2 }}{% else %}<span class="text-floating">Floating</span>{% endif %}
+                            </td>
+                            <td class="text-muted">{{ t.strategy|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="empty-row">Belum ada catatan trade. Silakan klik tombol "+ Log Trade" di kanan atas untuk mencatat posisi pertama Anda.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+        </div>
+    </div>
+
+</body>
+</html>

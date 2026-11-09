@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Trading Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=4">
+</head>
+<body>
+
+    <nav class="app-nav">
+        <div class="app-title-wrapper">
+            <div class="app-logo-box" aria-hidden="true">TJ</div>
+            <h1 class="app-title">DEWANGGA TRADING JOURNAL</h1>
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'about' %}" class="nav-link" style="color: #f8fafc;">About</a>
+            <a href="{% url 'logout' %}" class="btn-danger">Logout</a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="card-box" style="padding: 2.5rem;">
+            <h2 style="font-size: 1.75rem; color: #fbbf24; margin-bottom: 1rem;">Tentang Aplikasi Ini</h2>
+            <p class="text-muted" style="line-height: 1.6; margin-bottom: 1rem;">
+                Website <strong>Dewangga Trading Journal</strong> adalah platform pencatatan dan analisis performa transaksi finansial pribadi yang dirancang khusus untuk instrumen high-frequency trading seperti <strong>XAUUSD</strong> dan <strong>BTCUSD</strong>.
+            </p>
+            <p class="text-muted" style="line-height: 1.6; margin-bottom: 1rem;">
+                Menggunakan pendekatan metodologi teknikal modern serta sistem manajemen risiko yang disiplin, aplikasi ini membantu mengevaluasi hasil harian secara visual melalui kalendar performa interaktif berbasis PnL (Profit and Loss).
+            </p>
+            <p style="color: #f1f5f9; font-weight: 500; margin-top: 2rem;">
+                Dibangun menggunakan Django Framework, Supabase Database, dan Custom CSS Styling.
+            </p>
+        </div>
+    </main>
+
+</body>
+</html>

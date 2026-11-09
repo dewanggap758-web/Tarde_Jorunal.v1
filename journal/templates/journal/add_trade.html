@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Trade - Trade Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'journal/style.css' %}?v=18">
+</head>
+<body>
+
+    <div class="app-shell">
+        {% include "journal/_sidebar.html" with active_page="add_trade" %}
+        <div class="app-main">
+
+    <main class="main-container trade-page">
+        <div class="trade-page-heading">
+            <div>
+                <p class="trade-eyebrow">JURNAL TRADING</p>
+                <h2>Catat trade baru</h2>
+                <p>Dokumentasikan keputusan dan hasil trading Anda.</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="trade-back-link">← Kembali ke dashboard</a>
+        </div>
+
+        <section class="trade-metrics" aria-label="Ringkasan performa trading">
+            <article class="trade-metric-card">
+                <span class="trade-metric-label">Net profit / loss</span>
+                <strong class="{% if total_pnl >= 0 %}text-profit{% else %}text-loss{% endif %}">${{ total_pnl|floatformat:2 }}</strong>
+                <span class="trade-metric-note">Total realized PnL</span>
+            </article>
+            <article class="trade-metric-card">
+                <span class="trade-metric-label">Win rate</span>
+                <strong>{{ win_rate }}%</strong>
+                <span class="trade-metric-note">{{ total_trades }} total trade</span>
+            </article>
+            <article class="trade-metric-card">
+                <span class="trade-metric-label">Avg. risk / reward</span>
+                <strong>{{ avg_rr }}</strong>
+                <span class="trade-metric-note">Rasio rata-rata</span>
+            </article>
+            <article class="trade-metric-card">
+                <span class="trade-metric-label">Buy / sell</span>
+                <strong class="trade-metric-split"><span class="text-profit">Buy {{ buy_percentage }}%</span><span> / </span><span class="text-loss">Sell {{ sell_percentage }}%</span></strong>
+                <span class="trade-metric-note">Distribusi posisi</span>
+            </article>
+        </section>
+
+        <section class="trade-form-card">
+            <div class="trade-form-heading">
+                <div>
+                    <h3>Detail posisi</h3>
+                    <p>Isi informasi utama; strategi, emosi, dan catatan bersifat opsional.</p>
+                </div>
+                <span class="trade-form-badge">{{ total_trades }} trade tercatat</span>
+            </div>
+
+            <form method="POST" class="custom-trade-form trade-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="trade-form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+                {% for field in form %}
+                <div class="form-group{% if field.name == 'notes' %} form-group-wide{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <span class="field-error">{{ field.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="trade-form-footer">
+                    <span><span class="required-mark">*</span> Wajib diisi</span>
+                    <button type="submit" class="auth-btn">Simpan trade</button>
+                </div>
+            </form>
+        </section>
+    </main>
+        </div>
+    </div>
+
+</body>
+</html>
